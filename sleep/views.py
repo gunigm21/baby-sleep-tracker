@@ -6,6 +6,7 @@ from django.db.models import F, DurationField, ExpressionWrapper, Sum
 from django.db.models.functions import TruncDate
 from django.http import JsonResponse
 from datetime import timedelta
+from collections import defaultdict
 
 def sleep_list(request):
     sessions = SleepSession.objects.order_by('-start_time')
@@ -40,19 +41,21 @@ def sleep_delete(request, pk):
     return render(request, 'sleep/delete.html', {'session': session})
 
 def sleep_chart(request):
-    sessions = SleepSession.objects.all()
-    aggregated = (
-        sessions
-        .annotate(date=TruncDate('start_time'))
-        .values('date')
-        .annotate(total_sleep=Sum(models.ExpressionWrapper(models.F('end_time') - models.F('start_time'), output_field=models.DurationField())))
-        .order_by('date')
-    )
+    sessions = SleepSession.objects.all().order_by('start_time')
 
-    labels = [entry['date'].strftime('%d.%m') for entry in aggregated]
-    data = [round(entry['total_sleep'].total_seconds() / 3600, 2) for entry in aggregated]
+    sleep_by_date = defaultdict(timedelta)
 
-    return render(request, 'sleep/chart.html', {
-        'labels': labels,
-        'data': data,
-    })
+    for session in sessions:
+        date = session.start_time.date()
+        duration = session.end_time - session.start_time
+        sleep_by_date[date] += duration
+
+    dates = [date.strftime('%Y-%m-%d') for date in sorted(sleep_by_date)]
+    durations_hours = [round(sleep_by_date[date].total_seconds() / 3600, 2) for date in sorted(sleep_by_date)]
+
+    context = {
+        'dates': dates,
+        'durations': durations_hours,
+    }
+
+    return render(request, 'sleep/chart.html', context)

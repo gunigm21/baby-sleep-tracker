@@ -1,7 +1,7 @@
 import json
 from datetime import datetime
 from django.core.management.base import BaseCommand
-from sleep.models import SleepRecord  
+from sleep.models import SleepSession
 
 class Command(BaseCommand):
     help = 'Импорт данных сна из файла baby.json'
@@ -24,7 +24,7 @@ class Command(BaseCommand):
                 end = datetime.strptime(record["toDate"], "%Y-%m-%d %H:%M:%S")
                 note = record.get("details", "")
 
-                SleepRecord.objects.create(start_time=start, end_time=end, note=note)
+                SleepSession.objects.create(start_time=start, end_time=end, note=note)
                 count += 1
             except Exception as e:
                 self.stdout.write(self.style.WARNING(f"Ошибка в записи: {record} — {e}"))

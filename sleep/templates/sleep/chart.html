@@ -11,47 +11,42 @@
 <div class="container">
     <h1 class="mb-4">Сон по дням</h1>
     <a href="{% url 'sleep_list' %}" class="btn btn-outline-secondary mb-3">← Назад</a>
-
-    <canvas id="sleepChart" height="100"></canvas>
+    <canvas id="sleepChart" width="800" height="400"></canvas>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    const labels = {{ labels|safe }};
-    const data = {{ data|safe }};
-
-    const ctx = document.getElementById('sleepChart').getContext('2d');
-    const chart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: labels,
-            datasets: [{
-                label: 'Часы сна',
-                data: data,
-                backgroundColor: '#111',
-            }]
-        },
-        options: {
-            responsive: true,
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: {
-                        stepSize: 1
-                    },
-                    title: {
-                        display: true,
-                        text: 'Часы'
-                    }
-                },
-                x: {
-                    title: {
-                        display: true,
-                        text: 'Дата'
-                    }
-                }
-            }
-        }
-    });
+  const ctx = document.getElementById('sleepChart').getContext('2d');
+  const sleepChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+          labels: {{ dates|safe }},
+          datasets: [{
+              label: 'Сон (часов)',
+              data: {{ durations|safe }},
+              backgroundColor: 'rgba(54, 162, 235, 0.5)',
+              borderColor: 'rgba(54, 162, 235, 1)',
+              borderWidth: 1
+          }]
+      },
+      options: {
+          scales: {
+              y: {
+                  beginAtZero: true,
+                  title: {
+                      display: true,
+                      text: 'Часы сна'
+                  }
+              },
+              x: {
+                  title: {
+                      display: true,
+                      text: 'Дата'
+                  }
+              }
+          }
+      }
+  });
 </script>
 </body>
 </html>
